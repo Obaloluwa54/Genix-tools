@@ -320,6 +320,8 @@
             cursor: pointer;
             transition: var(--transition);
             font-size: 0.95rem;
+            text-decoration: none;
+            display: inline-block;
         }
 
         .open-tool-btn:hover {
@@ -560,7 +562,7 @@
                     <h3 class="tool-name">Receipt Generator</h3>
                     <p class="tool-description">Create professional receipts and invoices instantly with custom templates.</p>
                     <div class="tool-footer">
-                        <button class="open-tool-btn">Open Tool <i class="fas fa-arrow-right"></i></button>
+                        <a href="receipt.html" class="open-tool-btn">Open Tool <i class="fas fa-arrow-right"></i></a>
                     </div>
                 </div>
 
@@ -574,7 +576,7 @@
                     <h3 class="tool-name">Invoice Maker</h3>
                     <p class="tool-description">Generate professional invoices with auto-calculation and multiple currency support.</p>
                     <div class="tool-footer">
-                        <button class="open-tool-btn">Open Tool <i class="fas fa-arrow-right"></i></button>
+                        <a href="invoice.html" class="open-tool-btn">Open Tool <i class="fas fa-arrow-right"></i></a>
                     </div>
                 </div>
 
@@ -889,21 +891,25 @@
             filterTools();
         });
 
-        // Open tool button functionality
-        document.querySelectorAll('.open-tool-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const toolCard = this.closest('.tool-card');
-                const toolName = toolCard.querySelector('.tool-name').textContent;
+        // Open tool button functionality - updated to handle both buttons and links
+        document.querySelectorAll('.open-tool-btn').forEach(element => {
+            // If it's a button (not a link)
+            if (element.tagName === 'BUTTON') {
+                element.addEventListener('click', function() {
+                    const toolCard = this.closest('.tool-card');
+                    const toolName = toolCard.querySelector('.tool-name').textContent;
 
-                // Animation feedback
-                this.style.transform = 'scale(0.95)';
-                setTimeout(() => {
-                    this.style.transform = '';
-                }, 150);
+                    // Animation feedback
+                    this.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        this.style.transform = '';
+                    }, 150);
 
-                // In a real implementation, this would navigate to the tool
-                alert(`In a real implementation, this would open the "${toolName}" tool.`);
-            });
+                    // In a real implementation, this would navigate to the tool
+                    alert(`In a real implementation, this would open the "${toolName}" tool.`);
+                });
+            }
+            // If it's a link (like our Receipt Generator and Invoice Maker), it will naturally navigate
         });
 
         // Initialize filter
