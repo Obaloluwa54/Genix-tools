@@ -459,7 +459,7 @@
             <p>Genix builds simple, fast, and free tools that solve real problems. No noise. Just tools.</p>
             <div class="cta-buttons">
                 <a href="explore.html" class="btn btn-primary">Explore Tools</a>
-                <button class="btn btn-secondary">Build with Genix</button>
+                <a href="submit.html" class="btn btn-secondary">Build with Genix</a>
             </div>
         </div>
     </section>
@@ -635,11 +635,6 @@
                 setTimeout(() => {
                     this.style.transform = '';
                 }, 150);
-
-                // Simulate navigation for buttons that aren't links
-                if (this.textContent.includes('Build with Genix')) {
-                    alert('In a real implementation, this would navigate to the developer documentation.');
-                }
             });
         });
 
