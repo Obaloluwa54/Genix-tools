@@ -385,6 +385,8 @@
             font-size: 1rem;
             cursor: pointer;
             transition: var(--transition);
+            text-decoration: none;
+            display: inline-block;
         }
 
         .suggest-btn:hover {
@@ -752,7 +754,7 @@
         <div class="container">
             <h2 class="cta-title">New tools are added regularly.</h2>
             <p class="cta-subtitle">Have an idea for a tool that would help your workflow? We'd love to hear it.</p>
-            <button class="suggest-btn" id="suggestToolBtn">Suggest a Tool</button>
+            <a href="submit.html" class="suggest-btn" id="suggestToolBtn">Suggest a Tool</a>
         </div>
     </section>
 
@@ -902,17 +904,6 @@
                 // In a real implementation, this would navigate to the tool
                 alert(`In a real implementation, this would open the "${toolName}" tool.`);
             });
-        });
-
-        // Suggest tool button
-        document.getElementById('suggestToolBtn').addEventListener('click', function() {
-            this.style.transform = 'scale(0.98)';
-            setTimeout(() => {
-                this.style.transform = '';
-            }, 150);
-
-            // In a real implementation, this would open a suggestion form
-            alert('In a real implementation, this would open a tool suggestion form.');
         });
 
         // Initialize filter
