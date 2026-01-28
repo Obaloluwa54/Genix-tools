@@ -1,0 +1,1766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Genix - Receipt Generator</title>
+
+    <!-- External Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Dark theme (default) */
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #151515;
+            --bg-card: rgba(30, 30, 30, 0.7);
+            --text-primary: #f0f0f0;
+            --text-secondary: #b0b0b0;
+            --accent-color: #8b5cf6;
+            --accent-glow: rgba(139, 92, 246, 0.15);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+        }
+
+        .light-mode {
+            /* Light theme */
+            --bg-primary: #fafafa;
+            --bg-secondary: #ffffff;
+            --bg-card: rgba(255, 255, 255, 0.8);
+            --text-primary: #171717;
+            --text-secondary: #666666;
+            --accent-color: #7c3aed;
+            --accent-glow: rgba(124, 58, 237, 0.1);
+            --border-color: rgba(0, 0, 0, 0.08);
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            --glass-bg: rgba(0, 0, 0, 0.03);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            transition: var(--transition);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Header & Navigation */
+        header {
+            padding: 24px 0;
+            position: relative;
+            z-index: 10;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-weight: 800;
+            font-size: 28px;
+            letter-spacing: -0.5px;
+            background: linear-gradient(90deg, var(--accent-color), #a78bfa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .back-btn:hover {
+            color: var(--accent-color);
+        }
+
+        /* Theme toggle */
+        .theme-toggle {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 50px;
+            width: 60px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            padding: 0 5px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .theme-toggle:hover {
+            box-shadow: 0 0 12px var(--accent-glow);
+        }
+
+        .toggle-circle {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+        }
+
+        .light-mode .toggle-circle {
+            transform: translateX(28px);
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 60px 0 80px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(circle at 20% 50%, var(--accent-glow) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.05) 0%, transparent 50%);
+            z-index: -1;
+        }
+
+        .grid-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(var(--border-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border-color) 1px, transparent 1px);
+            background-size: 50px 50px;
+            opacity: 0.3;
+            z-index: -1;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 5vw, 3.5rem);
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -1.5px;
+            margin-bottom: 16px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero p {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto 40px;
+        }
+
+        /* Main Content */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+            margin-bottom: 60px;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Form Panel */
+        .form-panel, .preview-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 32px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            transition: var(--transition);
+        }
+
+        .form-section {
+            margin-bottom: 32px;
+        }
+
+        .form-section h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-section h3 i {
+            color: var(--accent-color);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        /* Items Table */
+        .items-table {
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .table-header {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr auto;
+            gap: 12px;
+            padding: 16px;
+            background: var(--bg-secondary);
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .items-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .item-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr auto;
+            gap: 12px;
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            align-items: center;
+            transition: var(--transition);
+        }
+
+        .item-row:hover {
+            background: var(--bg-secondary);
+        }
+
+        .item-row input {
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--bg-primary);
+        }
+
+        .item-total {
+            font-weight: 600;
+            color: var(--accent-color);
+        }
+
+        .remove-item {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: var(--transition);
+        }
+
+        .remove-item:hover {
+            color: var(--error-color);
+            background: var(--bg-secondary);
+        }
+
+        .add-item-btn {
+            width: 100%;
+            padding: 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: var(--transition);
+        }
+
+        .add-item-btn:hover {
+            border-color: var(--accent-color);
+            background: var(--bg-primary);
+        }
+
+        /* Optional Features */
+        .optional-features {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .optional-features {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .optional-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .optional-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .file-info {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            padding: 8px 12px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Switch Toggle */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 52px;
+            height: 28px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--bg-secondary);
+            transition: var(--transition);
+            border: 1px solid var(--border-color);
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 3px;
+            background-color: var(--text-secondary);
+            transition: var(--transition);
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(22px);
+            background-color: white;
+        }
+
+        /* Preview Panel */
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .preview-controls {
+            display: flex;
+            gap: 12px;
+        }
+
+        .preview-btn {
+            padding: 10px 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: var(--transition);
+        }
+
+        .preview-btn:hover {
+            border-color: var(--accent-color);
+            background: var(--bg-primary);
+        }
+
+        /* Receipt Container */
+        .receipt-container {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 24px;
+        }
+
+        .receipt {
+            font-family: 'Inter', sans-serif;
+            color: #333;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .receipt-header {
+            text-align: center;
+            margin-bottom: 24px;
+            padding-bottom: 20px;
+            border-bottom: 2px dashed #ddd;
+        }
+
+        .receipt-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 10px 0;
+            color: #111;
+        }
+
+        .receipt-subtitle {
+            font-size: 14px;
+            color: #666;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .receipt-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 24px;
+        }
+
+        .receipt-items {
+            margin-bottom: 24px;
+        }
+
+        .receipt-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .item-details {
+            flex: 1;
+        }
+
+        .item-name {
+            font-weight: 500;
+            color: #111;
+        }
+
+        .item-meta {
+            font-size: 12px;
+            color: #777;
+            margin-top: 4px;
+        }
+
+        .receipt-totals {
+            background: #f8f8f8;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 24px;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+        }
+
+        .total-row.grand-total {
+            font-weight: 700;
+            font-size: 18px;
+            border-top: 2px solid #ddd;
+            margin-top: 8px;
+            padding-top: 12px;
+            color: #111;
+        }
+
+        .receipt-notes {
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px dashed #ddd;
+            font-size: 14px;
+            color: #555;
+            line-height: 1.5;
+        }
+
+        .receipt-footer {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px dashed #ccc;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #888;
+        }
+
+        /* Preview Footer */
+        .total-summary {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            color: var(--text-primary);
+        }
+
+        .summary-item.grand-total {
+            font-weight: 700;
+            font-size: 1.125rem;
+            border-top: 1px solid var(--border-color);
+            margin-top: 8px;
+            padding-top: 12px;
+            color: var(--accent-color);
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-bottom: 60px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 16px 28px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 140px;
+            justify-content: center;
+        }
+
+        .action-btn.undo {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .action-btn.undo:hover:not(:disabled) {
+            border-color: var(--accent-color);
+            background: var(--bg-primary);
+        }
+
+        .action-btn.undo:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .action-btn.reset {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .action-btn.reset:hover {
+            border-color: var(--error-color);
+            color: var(--error-color);
+            background: var(--bg-primary);
+        }
+
+        .action-btn.download {
+            background: var(--accent-color);
+            color: white;
+            border: 1px solid var(--accent-color);
+            box-shadow: 0 4px 20px var(--accent-glow);
+        }
+
+        .action-btn.download:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px var(--accent-glow);
+        }
+
+        .action-btn.share {
+            background: #25D366;
+            color: white;
+            border: 1px solid #25D366;
+        }
+
+        .action-btn.share:hover {
+            background: #128C7E;
+            transform: translateY(-2px);
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--bg-secondary);
+            padding: 40px 0;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .footer-logo {
+            font-weight: 800;
+            font-size: 32px;
+            letter-spacing: -0.5px;
+            background: linear-gradient(90deg, var(--accent-color), #a78bfa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 16px;
+            display: inline-block;
+        }
+
+        .footer-tagline {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        /* Notification Container */
+        #notification-container {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 1000;
+            max-width: 350px;
+        }
+
+        .notification {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideIn 0.3s ease-out;
+            box-shadow: var(--shadow);
+        }
+
+        .notification.success {
+            border-left: 4px solid var(--success-color);
+        }
+
+        .notification.error {
+            border-left: 4px solid var(--error-color);
+        }
+
+        .notification.warning {
+            border-left: 4px solid var(--warning-color);
+        }
+
+        .notification.info {
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .notification i {
+            font-size: 1.25rem;
+        }
+
+        .notification.success i {
+            color: var(--success-color);
+        }
+
+        .notification.error i {
+            color: var(--error-color);
+        }
+
+        .notification.warning i {
+            color: var(--warning-color);
+        }
+
+        .notification.info i {
+            color: var(--accent-color);
+        }
+
+        /* Animations */
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 16px;
+            }
+
+            .hero {
+                padding: 40px 0 60px;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .main-content {
+                gap: 24px;
+            }
+
+            .form-panel, .preview-panel {
+                padding: 24px;
+            }
+
+            .table-header, .item-row {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+
+            .table-header div:nth-child(4),
+            .table-header div:nth-child(5),
+            .item-row .item-total,
+            .item-row .remove-item {
+                grid-column: span 1;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .action-btn {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header-content {
+                flex-direction: column;
+                gap: 16px;
+                align-items: flex-start;
+            }
+
+            .theme-toggle {
+                align-self: flex-end;
+                margin-top: -40px;
+            }
+
+            .form-panel, .preview-panel {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Theme Toggle -->
+    <div class="theme-toggle" id="themeToggle">
+        <div class="toggle-circle">
+            <i class="fas fa-moon dark-icon"></i>
+            <i class="fas fa-sun light-icon" style="display: none;"></i>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div>
+                    <a href="#" class="logo">Genix</a>
+                    <a href="index.html" class="back-btn">
+                        <i class="fas fa-arrow-left"></i> Back to Tools
+                    </a>
+                </div>
+                <div style="flex: 1; text-align: center;">
+                    <h1 style="font-size: 1.5rem; font-weight: 600; color: var(--text-primary);">
+                        <i class="fas fa-receipt"></i> Receipt Generator
+                    </h1>
+                </div>
+                <div></div> <!-- Empty div for balance -->
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-bg"></div>
+        <div class="grid-pattern"></div>
+        <div class="container">
+            <h1>Generate Professional Receipts Instantly</h1>
+            <p>Create beautiful receipts for your business. No sign-up required. Perfect for WhatsApp sellers & small businesses.</p>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="main-content">
+            <!-- Form Panel -->
+            <div class="form-panel">
+                <div class="form-section">
+                    <h3><i class="fas fa-store"></i> Business Details</h3>
+                    <div class="form-group">
+                        <label for="seller-name">Seller/Business Name *</label>
+                        <input type="text" id="seller-name" placeholder="e.g., Your Business Name">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="buyer-name">Customer Name *</label>
+                        <input type="text" id="buyer-name" placeholder="e.g., Customer Name">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="date-time">Date & Time</label>
+                        <input type="datetime-local" id="date-time">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="currency-select">Currency</label>
+                        <select id="currency-select">
+                            <option value="₦">Naira (₦)</option>
+                            <option value="$">Dollar ($)</option>
+                            <option value="€">Euro (€)</option>
+                            <option value="£">Pound (£)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tax-rate">Tax/VAT (%)</label>
+                        <input type="number" id="tax-rate" min="0" max="50" step="0.1" value="0" placeholder="0">
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3><i class="fas fa-shopping-cart"></i> Items</h3>
+                    <div class="items-table">
+                        <div class="table-header">
+                            <div>Item Name</div>
+                            <div>Qty</div>
+                            <div>Price</div>
+                            <div>Total</div>
+                            <div>Action</div>
+                        </div>
+
+                        <div class="items-list" id="items-list">
+                            <!-- Items will be added here dynamically -->
+                        </div>
+
+                        <button class="add-item-btn" id="add-item">
+                            <i class="fas fa-plus"></i> Add Item
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3><i class="fas fa-sticky-note"></i> Additional Details</h3>
+                    <div class="form-group">
+                        <label for="notes">Notes / Thank You Message</label>
+                        <textarea id="notes" placeholder="Thank you for your business!"></textarea>
+                    </div>
+
+                    <div class="optional-features">
+                        <div class="optional-group">
+                            <label for="logo-upload" class="optional-label">
+                                <i class="fas fa-image"></i> Upload Logo
+                            </label>
+                            <input type="file" id="logo-upload" accept=".jpg,.jpeg,.png">
+                            <div class="file-info" id="logo-info">No logo selected</div>
+                        </div>
+
+                        <div class="optional-group">
+                            <label class="optional-label">
+                                <i class="fas fa-qrcode"></i> Generate QR Code
+                            </label>
+                            <label class="switch">
+                                <input type="checkbox" id="qr-toggle">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Preview Panel -->
+            <div class="preview-panel">
+                <div class="preview-header">
+                    <h2><i class="fas fa-eye"></i> Live Preview</h2>
+                    <div class="preview-controls">
+                        <button class="preview-btn" id="copy-text">
+                            <i class="fas fa-copy"></i> Copy Text
+                        </button>
+                    </div>
+                </div>
+
+                <div class="receipt-container">
+                    <div class="receipt" id="receipt-preview">
+                        <!-- Receipt content will be rendered here -->
+                    </div>
+                </div>
+
+                <div class="preview-footer">
+                    <div class="total-summary">
+                        <div class="summary-item">
+                            <span>Subtotal:</span>
+                            <span id="subtotal-display">₦0.00</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>Tax (<span id="tax-percent">0</span>%):</span>
+                            <span id="tax-display">₦0.00</span>
+                        </div>
+                        <div class="summary-item grand-total">
+                            <span>Grand Total:</span>
+                            <span id="total-display">₦0.00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button class="action-btn undo" id="undo-btn">
+                <i class="fas fa-undo"></i> Undo
+            </button>
+            <button class="action-btn reset" id="reset-btn">
+                <i class="fas fa-redo"></i> Reset All
+            </button>
+            <button class="action-btn download" id="download-png">
+                <i class="fas fa-download"></i> Download PNG
+            </button>
+            <button class="action-btn download" id="download-pdf">
+                <i class="fas fa-file-pdf"></i> Download PDF
+            </button>
+            <button class="action-btn share" id="share-btn">
+                <i class="fab fa-whatsapp"></i> Share on WhatsApp
+            </button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-logo">Genix</div>
+            <p class="footer-tagline">Building free tools for the web.</p>
+            <p style="color: var(--text-secondary); font-size: 0.875rem; margin-top: 8px;">
+                Receipt Generator • No sign-up required • Completely free • Works offline
+            </p>
+        </div>
+    </footer>
+
+    <!-- Notification Container -->
+    <div id="notification-container"></div>
+
+    <script>
+        // State Management
+        const state = {
+            items: [],
+            undoStack: [],
+            maxUndo: 5,
+            currency: '₦',
+            sellerName: "",
+            buyerName: "",
+            notes: "",
+            dateTime: new Date().toISOString().slice(0, 16),
+            taxRate: 0,
+            showQR: false,
+            logo: null
+        };
+
+        // DOM Elements
+        const elements = {
+            sellerName: document.getElementById('seller-name'),
+            buyerName: document.getElementById('buyer-name'),
+            dateTime: document.getElementById('date-time'),
+            notes: document.getElementById('notes'),
+            itemsList: document.getElementById('items-list'),
+            addItemBtn: document.getElementById('add-item'),
+            undoBtn: document.getElementById('undo-btn'),
+            resetBtn: document.getElementById('reset-btn'),
+            downloadPngBtn: document.getElementById('download-png'),
+            downloadPdfBtn: document.getElementById('download-pdf'),
+            shareBtn: document.getElementById('share-btn'),
+            copyTextBtn: document.getElementById('copy-text'),
+            currencySelect: document.getElementById('currency-select'),
+            themeToggle: document.getElementById('theme-toggle'),
+            receiptPreview: document.getElementById('receipt-preview'),
+            taxRate: document.getElementById('tax-rate'),
+            qrToggle: document.getElementById('qr-toggle'),
+            logoUpload: document.getElementById('logo-upload'),
+            logoInfo: document.getElementById('logo-info'),
+            subtotalDisplay: document.getElementById('subtotal-display'),
+            taxDisplay: document.getElementById('tax-display'),
+            taxPercent: document.getElementById('tax-percent'),
+            totalDisplay: document.getElementById('total-display')
+        };
+
+        // Initialize App
+        function initApp() {
+            // Set current date/time
+            elements.dateTime.value = state.dateTime;
+
+            // Set initial values
+            elements.taxRate.value = state.taxRate;
+            elements.qrToggle.checked = state.showQR;
+
+            // Add initial empty item
+            addItem();
+
+            // Update preview and totals
+            updatePreview();
+            updateTotals();
+
+            // Set up event listeners
+            setupEventListeners();
+
+            // Set up auto-save state for undo
+            saveState();
+
+            // Apply saved theme
+            const savedTheme = localStorage.getItem('genix-theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+            if (savedTheme === 'light' || (!savedTheme && !prefersDark)) {
+                document.body.classList.add('light-mode');
+                updateThemeIcons();
+            }
+
+            showNotification('Receipt Generator Ready!', 'success');
+        }
+
+        // Save current state to undo stack
+        function saveState() {
+            const stateCopy = JSON.parse(JSON.stringify(state));
+            state.undoStack.push(stateCopy);
+
+            // Keep only last 5 states
+            if (state.undoStack.length > state.maxUndo) {
+                state.undoStack.shift();
+            }
+
+            // Update undo button state
+            updateUndoButton();
+        }
+
+        // Undo last action
+        function undo() {
+            if (state.undoStack.length > 1) {
+                state.undoStack.pop(); // Remove current state
+                const previousState = state.undoStack.pop(); // Get previous state
+
+                // Restore previous state
+                Object.assign(state, previousState);
+
+                // Update UI
+                updateFormFromState();
+                renderItems();
+                updatePreview();
+                updateTotals();
+
+                // Save the restored state
+                saveState();
+
+                showNotification('Last action undone!', 'success');
+            }
+        }
+
+        // Update form inputs from state
+        function updateFormFromState() {
+            elements.sellerName.value = state.sellerName;
+            elements.buyerName.value = state.buyerName;
+            elements.dateTime.value = state.dateTime;
+            elements.notes.value = state.notes;
+            elements.currencySelect.value = state.currency;
+            elements.taxRate.value = state.taxRate;
+            elements.qrToggle.checked = state.showQR;
+        }
+
+        // Update undo button state
+        function updateUndoButton() {
+            elements.undoBtn.disabled = state.undoStack.length <= 1;
+        }
+
+        // Render items list
+        function renderItems() {
+            elements.itemsList.innerHTML = '';
+
+            state.items.forEach((item, index) => {
+                const itemRow = document.createElement('div');
+                itemRow.className = 'item-row fade-in';
+                itemRow.innerHTML = `
+                    <input type="text" class="item-name" value="${item.name}"
+                           data-index="${index}" data-field="name" placeholder="Item name">
+                    <input type="number" class="item-quantity" value="${item.quantity}"
+                           data-index="${index}" data-field="quantity" min="1" placeholder="Qty">
+                    <input type="number" class="item-price" value="${item.price}"
+                           data-index="${index}" data-field="price" min="0" step="0.01" placeholder="Price">
+                    <div class="item-total">${formatCurrency(item.quantity * item.price)}</div>
+                    <button class="remove-item" data-index="${index}" title="Remove item">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                elements.itemsList.appendChild(itemRow);
+            });
+        }
+
+        // Add new item
+        function addItem() {
+            const newItem = {
+                id: Date.now(),
+                name: "",
+                quantity: 1,
+                price: 0
+            };
+
+            saveState();
+            state.items.push(newItem);
+            renderItems();
+            updatePreview();
+            updateTotals();
+
+            // Scroll to new item
+            elements.itemsList.lastChild.scrollIntoView({ behavior: 'smooth' });
+
+            showNotification('New item added!', 'success');
+        }
+
+        // Remove item
+        function removeItem(index) {
+            saveState();
+            const removedItem = state.items.splice(index, 1)[0];
+            renderItems();
+            updatePreview();
+            updateTotals();
+
+            showNotification(`Item removed`, 'warning');
+        }
+
+        // Update item field
+        function updateItem(index, field, value) {
+            saveState();
+
+            if (field === 'name') {
+                state.items[index][field] = value;
+            } else {
+                state.items[index][field] = parseFloat(value) || 0;
+            }
+
+            // Update total display in the row
+            const itemRow = elements.itemsList.children[index];
+            if (itemRow) {
+                const totalElement = itemRow.querySelector('.item-total');
+                const item = state.items[index];
+                totalElement.textContent = formatCurrency(item.quantity * item.price);
+            }
+
+            updatePreview();
+            updateTotals();
+        }
+
+        // Calculate subtotal
+        function calculateSubtotal() {
+            return state.items.reduce((sum, item) => {
+                return sum + (item.quantity * item.price);
+            }, 0);
+        }
+
+        // Calculate tax amount
+        function calculateTax(subtotal) {
+            return (subtotal * state.taxRate) / 100;
+        }
+
+        // Calculate grand total
+        function calculateTotal() {
+            const subtotal = calculateSubtotal();
+            const tax = calculateTax(subtotal);
+            return subtotal + tax;
+        }
+
+        // Format currency with commas
+        function formatCurrency(amount) {
+            const formatter = new Intl.NumberFormat('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+
+            return `${state.currency}${formatter.format(amount)}`;
+        }
+
+        // Format date for display
+        function formatDate(dateTimeString) {
+            const date = new Date(dateTimeString);
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // Generate receipt ID
+        function generateReceiptId() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let id = '';
+            for (let i = 0; i < 8; i++) {
+                id += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return `REC-${id}`;
+        }
+
+        // Update receipt preview
+        function updatePreview() {
+            const subtotal = calculateSubtotal();
+            const tax = calculateTax(subtotal);
+            const total = calculateTotal();
+            const receiptId = generateReceiptId();
+
+            // Generate receipt HTML
+            let receiptHTML = `
+                <div class="receipt-header">
+                    ${state.logo ? `<img src="${state.logo}" class="receipt-logo" alt="Business Logo" style="max-width: 80px; max-height: 80px; margin-bottom: 10px;">` : ''}
+                    <h2 class="receipt-title">${state.sellerName || 'Your Business Name'}</h2>
+                    <div class="receipt-subtitle">OFFICIAL RECEIPT</div>
+                </div>
+
+                <div class="receipt-meta">
+                    <div>
+                        <strong>Date:</strong> ${formatDate(state.dateTime)}<br>
+                        <strong>Receipt ID:</strong> ${receiptId}
+                    </div>
+                    <div>
+                        <strong>Customer:</strong><br>
+                        ${state.buyerName || 'Customer Name'}
+                    </div>
+                </div>
+
+                <div class="receipt-items">
+            `;
+
+            if (state.items.length === 0) {
+                receiptHTML += `
+                    <div class="receipt-item" style="text-align: center; color: #999; font-style: italic;">
+                        No items added yet
+                    </div>
+                `;
+            } else {
+                receiptHTML += state.items.map(item => `
+                    <div class="receipt-item">
+                        <div class="item-details">
+                            <div class="item-name">${item.name || 'Item'}</div>
+                            <div class="item-meta">${item.quantity} × ${formatCurrency(item.price)}</div>
+                        </div>
+                        <div class="item-price">${formatCurrency(item.quantity * item.price)}</div>
+                    </div>
+                `).join('');
+            }
+
+            receiptHTML += `
+                </div>
+
+                <div class="receipt-totals">
+                    <div class="total-row">
+                        <span>Subtotal:</span>
+                        <span>${formatCurrency(subtotal)}</span>
+                    </div>
+                    ${state.taxRate > 0 ? `
+                        <div class="total-row">
+                            <span>Tax (${state.taxRate}%):</span>
+                            <span>${formatCurrency(tax)}</span>
+                        </div>
+                    ` : ''}
+                    <div class="total-row grand-total">
+                        <span>TOTAL:</span>
+                        <span>${formatCurrency(total)}</span>
+                    </div>
+                </div>
+            `;
+
+            // Add notes if any
+            if (state.notes) {
+                receiptHTML += `
+                    <div class="receipt-notes">
+                        <strong>Notes:</strong> ${state.notes}
+                    </div>
+                `;
+            }
+
+            receiptHTML += `
+                <div class="receipt-footer">
+                    <div>Generated with Genix Receipt Generator</div>
+                    <div style="margin-top: 5px;">Thank you for your business!</div>
+                </div>
+            `;
+
+            elements.receiptPreview.innerHTML = receiptHTML;
+        }
+
+        // Update totals display
+        function updateTotals() {
+            const subtotal = calculateSubtotal();
+            const tax = calculateTax(subtotal);
+            const total = calculateTotal();
+
+            elements.subtotalDisplay.textContent = formatCurrency(subtotal);
+            elements.taxDisplay.textContent = formatCurrency(tax);
+            elements.taxPercent.textContent = state.taxRate;
+            elements.totalDisplay.textContent = formatCurrency(total);
+        }
+
+        // Reset all fields
+        function resetAll() {
+            if (confirm('Are you sure you want to reset all fields? This cannot be undone.')) {
+                saveState();
+
+                // Reset state
+                state.items = [];
+                state.sellerName = "";
+                state.buyerName = "";
+                state.notes = "";
+                state.dateTime = new Date().toISOString().slice(0, 16);
+                state.taxRate = 0;
+                state.showQR = false;
+                state.logo = null;
+                state.currency = '₦';
+
+                // Update form
+                updateFormFromState();
+                addItem(); // Add one empty item
+                updatePreview();
+                updateTotals();
+
+                // Reset logo info
+                elements.logoInfo.textContent = "No logo selected";
+                elements.logoUpload.value = "";
+
+                showNotification('All fields have been reset!', 'info');
+            }
+        }
+
+        // Download as PNG
+        async function downloadPNG() {
+            try {
+                showNotification('Generating PNG...', 'info');
+
+                const canvas = await html2canvas(elements.receiptPreview, {
+                    scale: 2,
+                    backgroundColor: null,
+                    logging: false,
+                    useCORS: true
+                });
+
+                const link = document.createElement('a');
+                const timestamp = new Date().toISOString().slice(0, 19).replace(/[:.]/g, '-');
+                link.download = `receipt-${timestamp}.png`;
+                link.href = canvas.toDataURL('image/png', 1.0);
+                link.click();
+
+                showNotification('PNG downloaded successfully!', 'success');
+            } catch (error) {
+                console.error('Error generating PNG:', error);
+                showNotification('Error generating PNG. Please try again.', 'error');
+            }
+        }
+
+        // Download as PDF
+        async function downloadPDF() {
+            try {
+                showNotification('Generating PDF...', 'info');
+                const { jsPDF } = window.jspdf;
+
+                const canvas = await html2canvas(elements.receiptPreview, {
+                    scale: 2,
+                    useCORS: true
+                });
+                const imgData = canvas.toDataURL('image/png');
+
+                const pdf = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'mm',
+                    format: 'a5'
+                });
+
+                const pageWidth = pdf.internal.pageSize.getWidth();
+                const imgWidth = pageWidth - 20;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+                pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
+
+                const timestamp = new Date().toISOString().slice(0, 19).replace(/[:.]/g, '-');
+                pdf.save(`receipt-${timestamp}.pdf`);
+
+                showNotification('PDF downloaded successfully!', 'success');
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+                showNotification('Error generating PDF. Please try again.', 'error');
+            }
+        }
+
+        // Share on WhatsApp
+        function shareOnWhatsApp() {
+            const subtotal = calculateSubtotal();
+            const tax = calculateTax(subtotal);
+            const total = calculateTotal();
+
+            const receiptText = `
+*RECEIPT FROM ${state.sellerName || 'Business'}*
+📅 Date: ${formatDate(state.dateTime)}
+👤 Customer: ${state.buyerName || 'Customer'}
+
+${state.items.map(item => `• ${item.quantity}x ${item.name} - ${formatCurrency(item.quantity * item.price)}`).join('\n')}
+
+${state.taxRate > 0 ? `📊 Tax (${state.taxRate}%): ${formatCurrency(tax)}` : ''}
+
+💰 *TOTAL: ${formatCurrency(total)}*
+
+${state.notes ? `💬 ${state.notes}` : ''}
+
+_Generated with Genix Receipt Generator_
+            `.trim();
+
+            const encodedText = encodeURIComponent(receiptText);
+            const whatsappUrl = `https://wa.me/?text=${encodedText}`;
+
+            window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+            showNotification('Opening WhatsApp...', 'info');
+        }
+
+        // Copy receipt text to clipboard
+        async function copyReceiptText() {
+            const subtotal = calculateSubtotal();
+            const tax = calculateTax(subtotal);
+            const total = calculateTotal();
+
+            const receiptText = `
+RECEIPT FROM ${state.sellerName || 'Business'}
+Date: ${formatDate(state.dateTime)}
+Customer: ${state.buyerName || 'Customer'}
+
+${state.items.map(item => `- ${item.quantity}x ${item.name}: ${formatCurrency(item.quantity * item.price)}`).join('\n')}
+
+${state.taxRate > 0 ? `Tax (${state.taxRate}%): ${formatCurrency(tax)}` : ''}
+TOTAL: ${formatCurrency(total)}
+
+${state.notes ? `Notes: ${state.notes}` : ''}
+
+Generated with Genix Receipt Generator
+            `.trim();
+
+            try {
+                await navigator.clipboard.writeText(receiptText);
+                showNotification('Receipt text copied to clipboard!', 'success');
+            } catch (error) {
+                console.error('Copy failed:', error);
+
+                // Fallback method
+                const textArea = document.createElement('textarea');
+                textArea.value = receiptText;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+
+                showNotification('Receipt text copied to clipboard!', 'success');
+            }
+        }
+
+        // Change currency
+        function changeCurrency(currency) {
+            state.currency = currency;
+            renderItems();
+            updatePreview();
+            updateTotals();
+        }
+
+        // Update tax rate
+        function updateTaxRate(rate) {
+            state.taxRate = parseFloat(rate) || 0;
+            updatePreview();
+            updateTotals();
+        }
+
+        // Handle logo upload
+        function handleLogoUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (!file.type.match('image/jpeg') && !file.type.match('image/png')) {
+                showNotification('Please upload a JPG or PNG image only.', 'error');
+                return;
+            }
+
+            if (file.size > 2 * 1024 * 1024) { // 2MB limit
+                showNotification('Image size should be less than 2MB.', 'error');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                state.logo = e.target.result;
+                elements.logoInfo.textContent = `${file.name} (${(file.size / 1024).toFixed(1)}KB)`;
+                updatePreview();
+                showNotification('Logo uploaded successfully!', 'success');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Show notification
+        function showNotification(message, type = 'info') {
+            const container = document.getElementById('notification-container');
+
+            // Remove existing notification
+            const existingNotification = container.querySelector('.notification');
+            if (existingNotification) {
+                existingNotification.style.animation = 'slideOut 0.3s ease-in forwards';
+                setTimeout(() => existingNotification.remove(), 300);
+            }
+
+            // Create new notification
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <i class="fas ${type === 'error' ? 'fa-exclamation-circle' :
+                                type === 'warning' ? 'fa-exclamation-triangle' :
+                                type === 'success' ? 'fa-check-circle' : 'fa-info-circle'}"></i>
+                <span>${message}</span>
+            `;
+
+            container.appendChild(notification);
+
+            // Auto-remove after 4 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.style.animation = 'slideOut 0.3s ease-in forwards';
+                    setTimeout(() => notification.remove(), 300);
+                }
+            }, 4000);
+        }
+
+        // Theme functionality
+        function updateThemeIcons() {
+            const darkIcon = document.querySelector('.dark-icon');
+            const lightIcon = document.querySelector('.light-icon');
+
+            if (document.body.classList.contains('light-mode')) {
+                darkIcon.style.display = 'none';
+                lightIcon.style.display = 'block';
+            } else {
+                darkIcon.style.display = 'block';
+                lightIcon.style.display = 'none';
+            }
+        }
+
+        // Set up event listeners
+        function setupEventListeners() {
+            // Form inputs
+            elements.sellerName.addEventListener('input', (e) => {
+                saveState();
+                state.sellerName = e.target.value;
+                updatePreview();
+            });
+
+            elements.buyerName.addEventListener('input', (e) => {
+                saveState();
+                state.buyerName = e.target.value;
+                updatePreview();
+            });
+
+            elements.dateTime.addEventListener('change', (e) => {
+                saveState();
+                state.dateTime = e.target.value;
+                updatePreview();
+            });
+
+            elements.notes.addEventListener('input', (e) => {
+                saveState();
+                state.notes = e.target.value;
+                updatePreview();
+            });
+
+            // Items list delegation
+            elements.itemsList.addEventListener('input', (e) => {
+                if (e.target.classList.contains('item-name') ||
+                    e.target.classList.contains('item-quantity') ||
+                    e.target.classList.contains('item-price')) {
+                    const index = parseInt(e.target.dataset.index);
+                    const field = e.target.dataset.field;
+                    const value = e.target.value;
+
+                    updateItem(index, field, value);
+                }
+            });
+
+            elements.itemsList.addEventListener('click', (e) => {
+                if (e.target.closest('.remove-item')) {
+                    const button = e.target.closest('.remove-item');
+                    const index = parseInt(button.dataset.index);
+                    removeItem(index);
+                }
+            });
+
+            // Action buttons
+            elements.addItemBtn.addEventListener('click', addItem);
+            elements.undoBtn.addEventListener('click', undo);
+            elements.resetBtn.addEventListener('click', resetAll);
+            elements.downloadPngBtn.addEventListener('click', downloadPNG);
+            elements.downloadPdfBtn.addEventListener('click', downloadPDF);
+            elements.shareBtn.addEventListener('click', shareOnWhatsApp);
+            elements.copyTextBtn.addEventListener('click', copyReceiptText);
+
+            // Currency selector
+            elements.currencySelect.addEventListener('change', (e) => {
+                changeCurrency(e.target.value);
+            });
+
+            // Tax rate
+            elements.taxRate.addEventListener('input', (e) => {
+                updateTaxRate(e.target.value);
+            });
+
+            // Logo upload
+            elements.logoUpload.addEventListener('change', handleLogoUpload);
+
+            // Theme toggle
+            const themeToggle = document.getElementById('themeToggle');
+            themeToggle.addEventListener('click', () => {
+                document.body.classList.toggle('light-mode');
+                updateThemeIcons();
+
+                // Save preference
+                localStorage.setItem('genix-theme',
+                    document.body.classList.contains('light-mode') ? 'light' : 'dark'
+                );
+
+                showNotification(`Switched to ${document.body.classList.contains('light-mode') ? 'Light' : 'Dark'} mode`, 'info');
+            });
+        }
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
