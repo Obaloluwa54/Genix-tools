@@ -3,206 +3,654 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Genix Tools - Free Online Tools</title>
+    <title>Genix - Free Tools for Everyday Users</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        :root {
+            /* Dark theme (default) */
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #151515;
+            --bg-card: rgba(30, 30, 30, 0.7);
+            --text-primary: #f0f0f0;
+            --text-secondary: #b0b0b0;
+            --accent-color: #8b5cf6;
+            --accent-glow: rgba(139, 92, 246, 0.15);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .light-mode {
+            /* Light theme */
+            --bg-primary: #fafafa;
+            --bg-secondary: #ffffff;
+            --bg-card: rgba(255, 255, 255, 0.8);
+            --text-primary: #171717;
+            --text-secondary: #666666;
+            --accent-color: #7c3aed;
+            --accent-glow: rgba(124, 58, 237, 0.1);
+            --border-color: rgba(0, 0, 0, 0.08);
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            --glass-bg: rgba(0, 0, 0, 0.03);
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
         }
-        
+
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            transition: var(--transition);
+            overflow-x: hidden;
             min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Theme toggle */
+        .theme-toggle {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 100;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 50px;
+            width: 60px;
+            height: 32px;
             display: flex;
-            flex-direction: column;
+            align-items: center;
+            padding: 0 5px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .theme-toggle:hover {
+            box-shadow: 0 0 12px var(--accent-glow);
+        }
+
+        .toggle-circle {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            padding: 20px;
-            text-align: center;
+            font-size: 12px;
         }
-        
-        .container {
-            max-width: 800px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+
+        .light-mode .toggle-circle {
+            transform: translateX(28px);
         }
-        
+
+        /* Header */
+        header {
+            padding: 24px 0;
+            position: relative;
+            z-index: 10;
+        }
+
         .logo {
-            font-size: 3.5rem;
             font-weight: 800;
-            margin-bottom: 10px;
-            background: linear-gradient(45deg, #00ff87, #60efff);
+            font-size: 28px;
+            letter-spacing: -0.5px;
+            background: linear-gradient(90deg, var(--accent-color), #a78bfa);
             -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
+            text-decoration: none;
+            display: inline-block;
         }
-        
-        .domain {
-            font-size: 1.5rem;
-            color: #00ff87;
-            margin-bottom: 30px;
-            font-weight: 600;
+
+        /* Hero Section */
+        .hero {
+            padding: 80px 0 120px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
         }
-        
-        .tagline {
-            font-size: 1.8rem;
-            margin-bottom: 20px;
-            line-height: 1.4;
+
+        .hero-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(circle at 20% 50%, var(--accent-glow) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.05) 0%, transparent 50%);
+            z-index: -1;
         }
-        
-        .coming-soon {
-            font-size: 2.5rem;
-            margin: 40px 0;
-            color: #ffd166;
-            font-weight: 700;
+
+        .grid-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(var(--border-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border-color) 1px, transparent 1px);
+            background-size: 50px 50px;
+            opacity: 0.3;
+            z-index: -1;
         }
-        
-        .tools-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin: 40px 0;
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -1.5px;
+            margin-bottom: 24px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
         }
-        
-        .tool-card {
-            background: rgba(255, 255, 255, 0.15);
-            padding: 20px;
+
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto 48px;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 16px 32px;
             border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: transform 0.3s;
-        }
-        
-        .tool-card:hover {
-            transform: translateY(-5px);
-            background: rgba(255, 255, 255, 0.25);
-        }
-        
-        .email-form {
-            margin-top: 40px;
-        }
-        
-        input[type="email"] {
-            padding: 15px 20px;
-            width: 300px;
-            border: none;
-            border-radius: 50px;
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            font-size: 1rem;
-            margin-right: 10px;
-        }
-        
-        input::placeholder {
-            color: rgba(255, 255, 255, 0.7);
-        }
-        
-        button {
-            padding: 15px 30px;
-            background: linear-gradient(45deg, #00ff87, #00ccff);
-            border: none;
-            border-radius: 50px;
-            color: #333;
             font-weight: 600;
             font-size: 1rem;
             cursor: pointer;
-            transition: transform 0.3s;
+            transition: var(--transition);
+            border: none;
+            font-family: 'Inter', sans-serif;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
         }
-        
-        button:hover {
-            transform: scale(1.05);
+
+        .btn-primary {
+            background-color: var(--accent-color);
+            color: white;
+            box-shadow: 0 4px 20px var(--accent-glow);
         }
-        
-        .footer {
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px var(--accent-glow);
+        }
+
+        .btn-secondary {
+            background-color: var(--glass-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--bg-card);
+            transform: translateY(-2px);
+            border-color: var(--accent-color);
+        }
+
+        /* Cards Section */
+        .section {
+            padding: 80px 0;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .section-subtitle {
+            color: var(--text-secondary);
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto 60px;
+            font-size: 1.125rem;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
             margin-top: 40px;
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 0.9rem;
         }
-        
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 40px 30px;
+            transition: var(--transition);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow);
+            border-color: var(--accent-color);
+        }
+
+        .card-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            background: var(--accent-glow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+            color: var(--accent-color);
+            font-size: 24px;
+        }
+
+        .card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 16px;
+            font-weight: 700;
+        }
+
+        .card p {
+            color: var(--text-secondary);
+        }
+
+        /* Tool Cards */
+        .tool-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 30px;
+            transition: var(--transition);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            cursor: pointer;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow);
+            border-color: var(--accent-color);
+        }
+
+        .tool-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background: var(--accent-glow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            color: var(--accent-color);
+            font-size: 20px;
+        }
+
+        .tool-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        /* Why Genix Section */
+        .why-genix {
+            text-align: center;
+            padding: 80px 0;
+            position: relative;
+        }
+
+        .why-genix::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+        }
+
+        .statement {
+            font-size: 1.75rem;
+            font-weight: 600;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.4;
+            color: var(--text-primary);
+        }
+
+        .statement span {
+            color: var(--accent-color);
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--bg-secondary);
+            padding: 60px 0 40px;
+            border-top: 1px solid var(--border-color);
+            margin-top: 80px;
+            text-align: center;
+        }
+
+        .footer-logo {
+            font-weight: 800;
+            font-size: 32px;
+            letter-spacing: -0.5px;
+            background: linear-gradient(90deg, var(--accent-color), #a78bfa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 16px;
+            display: inline-block;
+        }
+
+        .footer-tagline {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        /* Responsive */
         @media (max-width: 768px) {
-            .container {
-                padding: 20px;
+            .hero {
+                padding: 60px 0 80px;
             }
-            
-            input[type="email"] {
-                width: 100%;
-                margin-bottom: 15px;
+
+            .hero h1 {
+                font-size: 2.5rem;
             }
-            
-            button {
+
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn {
                 width: 100%;
+                max-width: 300px;
+            }
+
+            .section {
+                padding: 60px 0;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .theme-toggle {
+                top: 16px;
+                right: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero p {
+                font-size: 1.125rem;
+            }
+
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .card {
+                padding: 30px 20px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="logo">GENIX</div>
-        <div class="domain">genix.name.ng</div>
-        
-        <h1 class="tagline">Free Online Tools for Developers & Creators</h1>
-        
-        <div class="coming-soon">🚀 Coming Soon</div>
-        
-        <div class="tools-list">
-            <div class="tool-card">
-                <h3>📄 File Converter</h3>
-                <p>PDF to Word, Image format converter, and more</p>
-            </div>
-            <div class="tool-card">
-                <h3>💻 Code Tools</h3>
-                <p>JSON formatter, HTML validator, CSS minifier</p>
-            </div>
-            <div class="tool-card">
-                <h3>🔢 Calculators</h3>
-                <p>Unit converter, Currency calculator, Generators</p>
-            </div>
-            <div class="tool-card">
-                <h3>🇳🇬 Nigeria Tools</h3>
-                <p>NIN validator, Bank code lookup, Nigerian-specific tools</p>
-            </div>
-        </div>
-        
-        <div class="email-form">
-            <h3>Get notified when we launch!</h3>
-            <p>Be the first to access our free tools collection</p>
-            <form id="notify-form">
-                <input type="email" placeholder="Enter your email address" required>
-                <button type="submit">Notify Me</button>
-            </form>
-            <p style="margin-top: 15px; font-size: 0.9rem; opacity: 0.8;">
-                No spam. We'll email you once we're live.
-            </p>
-        </div>
-        
-        <div class="footer">
-            <p>© 2024 Genix Tools. All tools will be completely free.</p>
-            <p>Built for the Nigerian developer community</p>
+    <!-- Theme Toggle -->
+    <div class="theme-toggle" id="themeToggle">
+        <div class="toggle-circle">
+            <i class="fas fa-moon dark-icon"></i>
+            <i class="fas fa-sun light-icon" style="display: none;"></i>
         </div>
     </div>
-    
+
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <a href="#" class="logo">Genix</a>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-bg"></div>
+        <div class="grid-pattern"></div>
+        <div class="container">
+            <h1>Free tools. Built to be useful.</h1>
+            <p>Genix builds simple, fast, and free tools that solve real problems. No noise. Just tools.</p>
+            <div class="cta-buttons">
+                <a href="explore.html" class="btn btn-primary">Explore Tools</a>
+                <button class="btn btn-secondary">Build with Genix</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- What We Do Section -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">What We Do</h2>
+            <p class="section-subtitle">Our platform focuses on creating essential utilities that anyone can use instantly, without friction.</p>
+
+            <div class="cards-grid">
+                <div class="card">
+                    <div class="card-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h3>Free Tools</h3>
+                    <p>Utilities anyone can use instantly without signups, subscriptions, or limitations.</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-icon">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                    <h3>Fast & Lightweight</h3>
+                    <p>No bloated dashboards. Tools load instantly and perform with minimal resources.</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3>Built for Everyone</h3>
+                    <p>Designed for founders, students, creators, and developers alike.</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>Always Improving</h3>
+                    <p>New tools added regularly based on user feedback and emerging needs.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Tools Section -->
+    <section class="section" style="background-color: var(--bg-secondary);">
+        <div class="container">
+            <h2 class="section-title">Featured Tools</h2>
+            <p class="section-subtitle">A selection of our most popular utilities. More tools added every month.</p>
+
+            <div class="cards-grid">
+                <div class="tool-card">
+                    <div class="tool-icon">
+                        <i class="fas fa-receipt"></i>
+                    </div>
+                    <h3>Receipt Generator</h3>
+                    <p>Create professional receipts and invoices instantly.</p>
+                </div>
+
+                <div class="tool-card">
+                    <div class="tool-icon">
+                        <i class="fas fa-text-height"></i>
+                    </div>
+                    <h3>Text Formatter</h3>
+                    <p>Format, clean, and transform text with multiple options.</p>
+                </div>
+
+                <div class="tool-card">
+                    <div class="tool-icon">
+                        <i class="fas fa-link"></i>
+                    </div>
+                    <h3>URL Tools</h3>
+                    <p>Shorten, analyze, and decode URLs with advanced options.</p>
+                </div>
+
+                <div class="tool-card">
+                    <div class="tool-icon">
+                        <i class="fas fa-briefcase"></i>
+                    </div>
+                    <h3>Business Utilities</h3>
+                    <p>Company name generators, tax calculators, and more.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Genix Section -->
+    <section class="why-genix">
+        <div class="container">
+            <p class="statement">
+                "Genix is not a marketplace.<br>
+                It's a growing collection of tools made to be <span>simple, free, and reliable</span>."
+            </p>
+        </div>
+    </section>
+
+    <!-- Call To Action -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">Start using Genix today.</h2>
+            <p class="section-subtitle">Join thousands of users who rely on our tools for their daily tasks.</p>
+
+            <div style="text-align: center; margin-top: 40px;">
+                <a href="explore.html" class="btn btn-primary" style="padding: 18px 48px; font-size: 1.125rem;">Open Tools</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-logo">Genix</div>
+            <p class="footer-tagline">Building free tools for the web.</p>
+        </div>
+    </footer>
+
     <script>
-        // Simple form handling
-        document.getElementById('notify-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const email = this.querySelector('input[type="email"]').value;
-            alert(`Thank you! We'll notify you at ${email} when we launch.`);
-            this.reset();
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('themeToggle');
+        const body = document.body;
+        const darkIcon = document.querySelector('.dark-icon');
+        const lightIcon = document.querySelector('.light-icon');
+
+        // Check for saved theme or prefer-color-scheme
+        const savedTheme = localStorage.getItem('genix-theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+        // Set initial theme
+        if (savedTheme === 'light' || (!savedTheme && !prefersDark)) {
+            body.classList.add('light-mode');
+            darkIcon.style.display = 'none';
+            lightIcon.style.display = 'block';
+        } else {
+            darkIcon.style.display = 'block';
+            lightIcon.style.display = 'none';
+        }
+
+        // Toggle theme on click
+        themeToggle.addEventListener('click', () => {
+            body.classList.toggle('light-mode');
+
+            // Update icons
+            if (body.classList.contains('light-mode')) {
+                darkIcon.style.display = 'none';
+                lightIcon.style.display = 'block';
+                localStorage.setItem('genix-theme', 'light');
+            } else {
+                darkIcon.style.display = 'block';
+                lightIcon.style.display = 'none';
+                localStorage.setItem('genix-theme', 'dark');
+            }
         });
-        
-        // Add some interactive effect
-        document.querySelectorAll('.tool-card').forEach(card => {
-            card.addEventListener('click', function() {
-                this.style.background = 'rgba(0, 255, 135, 0.3)';
-                setTimeout(() => {
-                    this.style.background = '';
-                }, 300);
+
+        // Card hover animations
+        const cards = document.querySelectorAll('.card, .tool-card');
+        cards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = this.classList.contains('card') ? 'translateY(-8px)' : 'translateY(-5px)';
             });
+
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+
+        // Button click animations - Only for actual buttons, not links
+        const buttons = document.querySelectorAll('button.btn');
+        buttons.forEach(button => {
+            button.addEventListener('click', function() {
+                this.style.transform = 'scale(0.98)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 150);
+
+                // Simulate navigation for buttons that aren't links
+                if (this.textContent.includes('Build with Genix')) {
+                    alert('In a real implementation, this would navigate to the developer documentation.');
+                }
+            });
+        });
+
+        // Add subtle scroll animation
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const heroBg = document.querySelector('.hero-bg');
+
+            if (heroBg) {
+                heroBg.style.transform = `translateY(${scrolled * 0.2}px)`;
+            }
         });
     </script>
 </body>
